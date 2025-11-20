@@ -233,7 +233,8 @@ def create_parser():
     parser.add_argument('--weight_file_name', default=None, type=str, help='Wild type sequence mutated in the assay (to be provided if not using a reference file)')
     parser.add_argument('--MSA_start', default=None, type=int, help='Index of first AA covered by the MSA relative to target_seq coordinates (1-indexing)')
     parser.add_argument('--MSA_end', default=None, type=int, help='Index of last AA covered by the MSA relative to target_seq coordinates (1-indexing)')
-    
+    parser.add_argument('--proteinttt_cfg', default=None, type=str, help='Path to the ProteinTTT configuration file')
+
     parser.add_argument("--nogpu", action="store_true", help="Do not use GPU even if available")
     return parser
 
@@ -339,6 +340,11 @@ def main(args):
         MSA_weight_file_name = args.msa_weights_folder + os.sep + args.weight_file_name if args.msa_weights_folder is not None else None
         df = pd.read_csv(args.dms_input)
     
+    # Check if output file already exists, skip if it does
+    if os.path.exists(args.dms_output):
+        print(f"Output file {args.dms_output} already exists. Skipping computation.")
+        return
+    
     if len(df) == 0:
         raise ValueError("No rows found in the dataframe")
     print(f"df shape: {df.shape}", flush=True)
@@ -354,6 +360,13 @@ def main(args):
             print("Transferred model to GPU")
         else:
             print(f"Not using GPU. torch.cuda.is_available(): {torch.cuda.is_available()}, args.nogpu: {args.nogpu}")
+
+        if args.proteinttt_cfg is not None:
+            if isinstance(model, MSATransformer):
+                raise NotImplementedError()
+            from proteinttt.models.esm2 import ESM2TTT
+            model = ESM2TTT.ttt_from_pretrained(model, args.proteinttt_cfg)
+            model.ttt(args.sequence)
 
         batch_converter = alphabet.get_batch_converter()
 
