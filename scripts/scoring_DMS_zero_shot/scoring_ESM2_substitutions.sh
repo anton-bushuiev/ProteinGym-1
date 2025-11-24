@@ -3,12 +3,17 @@
 source ../zero_shot_config.sh
 source activate prosst
 
-export model_checkpoint="/scratch/project/open-35-8/antonb/models/esm2_t12_35M_UR50D.pt"
-export dms_output_folder=${DMS_output_score_folder_subs}/ESM2-35M-ProteinTTT 
-export protein_ttt_cfg=${PROTEINGYM_CACHE}/proteinttt_configs/ESM2-35M.yaml
+# export model_checkpoint="/scratch/project/open-35-8/antonb/models/esm2_t12_35M_UR50D.pt"
+# export dms_output_folder=${DMS_output_score_folder_subs}/ESM2-35M-ProteinTTT 
+# export protein_ttt_cfg=${PROTEINGYM_CACHE}/proteinttt_configs/ESM2-35M.yaml
 
-## Regression weights are at: https://dl.fbaipublicfiles.com/fair-esm/regression/esm2_t33_650M_UR50S-contact-regression.pt
-#https://dl.fbaipublicfiles.com/fair-esm/regression/esm2_t33_650M_UR50S-contact-regression.pt
+# export model_checkpoint="/scratch/project/open-35-8/antonb/models/esm2_t33_650M_UR50D.pt"
+# export dms_output_folder=${DMS_output_score_folder_subs}/ESM2-650M
+# export protein_ttt_cfg="null"
+
+export model_checkpoint="/scratch/project/open-35-8/antonb/models/esm2_t33_650M_UR50D.pt"
+export dms_output_folder=${DMS_output_score_folder_subs}/ESM2-650M-ProteinTTT 
+export protein_ttt_cfg=${PROTEINGYM_CACHE}/proteinttt_configs/ESM2-650M.yaml
 
 export model_type="ESM2"
 export scoring_strategy="masked-marginals"

@@ -361,7 +361,7 @@ def main(args):
         else:
             print(f"Not using GPU. torch.cuda.is_available(): {torch.cuda.is_available()}, args.nogpu: {args.nogpu}")
 
-        if args.proteinttt_cfg is not None:
+        if args.proteinttt_cfg is not None and args.proteinttt_cfg != "null":
             if isinstance(model, MSATransformer):
                 raise NotImplementedError()
             from proteinttt.models.esm2 import ESM2TTT

@@ -60,6 +60,10 @@ def calc_fitness(foldseek_bin, model, DMS_data, tokenizer, mutation_col='mutant'
     struc_seq = get_struc_seq(foldseek_bin, pdb_file, ["A"], plddt_mask=True, plddt_threshold=70)["A"][1].lower()
 
     seq = "".join([a + b for a, b in zip(target_seq, struc_seq)])
+
+    if hasattr(model, "ttt"):
+        model.ttt(seq)
+
     log_proba_list = []
     for mut_info in tqdm(DMS_data[mutation_col]):
         mutations = []
@@ -118,15 +122,20 @@ def main():
                         help='Name of folder to write model scores to')
     parser.add_argument('--indel_mode', action='store_true',
                         help='Whether to score sequences with insertions and deletions')
+    parser.add_argument('--protein_ttt_cfg', default=None, type=str,
+                        help='Path of protein ttt cfg file')
     args = parser.parse_args()
     model = AutoModelForMaskedLM.from_pretrained(args.SaProt_model_name_or_path, trust_remote_code=True)
     model.cuda()
     tokenizer = AutoTokenizer.from_pretrained(args.SaProt_model_name_or_path)
-    
+
     mapping_protein_seq_DMS = pd.read_csv(args.DMS_reference_file_path)
     list_DMS = mapping_protein_seq_DMS["DMS_id"]
     DMS_id = list_DMS[args.DMS_index]
     
+    if args.output_scores_folder is not None and not os.path.exists(args.output_scores_folder):
+        os.makedirs(args.output_scores_folder, exist_ok=True)
+
     scoring_filename = args.output_scores_folder + os.sep + DMS_id + '.csv'
     if os.path.exists(scoring_filename):
         print("Scores already computed for: {}".format(DMS_id))
@@ -143,6 +152,11 @@ def main():
         0].split('|')  # if sequence is large (eg., BRCA2_HUMAN) the structure is split in several chunks
     pdb_ranges = mapping_protein_seq_DMS["pdb_range"][mapping_protein_seq_DMS["DMS_id"] == DMS_id].values[0].split(
         '|')
+
+    if args.protein_ttt_cfg is not None and args.protein_ttt_cfg != "null":
+        from proteinttt.models.saprot_hf import SaProtTTT_HF
+        model = SaProtTTT_HF.ttt_from_pretrained(model, ttt_cfg=args.protein_ttt_cfg, config=model.config)
+
     model_scores = []
     for pdb_index, pdb_filename in enumerate(pdb_filenames):
         pdb_file = args.structure_data_folder + os.sep + pdb_filename
